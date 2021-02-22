@@ -5,15 +5,18 @@ import ContentSeparator from "../ContentSeparator";
 import Graph from "../Graph";
 import "./app.css";
 
-const initialState = [
-  { currency: "Rub", price: "1100" },
-  { currency: "Eur", price: "100" },
-  { currency: "Zlt", price: "400" },
-];
+const initialState = {
+  currencyData: [
+    { currency: "Rub", price: "1100" },
+    { currency: "Eur", price: "100" },
+    { currency: "Zlt", price: "400" },
+  ],
+  activeCurrencyItem: null,
+};
 
 export default function App() {
-  const [state, setCurrencyData] = useState({ currencyData: initialState });
-  const { currencyData } = state;
+  const [state, setCurrencyData] = useState(initialState);
+  const { currencyData, activeCurrencyItem } = state;
 
   const dividingLine = currencyData.length > 0 ? <ContentSeparator /> : "";
 
@@ -24,7 +27,15 @@ export default function App() {
     });
   };
 
-  const deleteCurrencyItem = (currency) => {
+  const selectCurrencyItem = (currencyName) => {
+    setCurrencyData({ ...state, activeCurrencyItem: currencyName });
+  };
+
+  const cleanActiveCurrencyItem = () => {
+    setCurrencyData({ ...state, activeCurrencyItem: null });
+  };
+
+  const deleteCurrencyItem = (currency, event) => {
     const itemIndex = currencyData.findIndex(
       (item) => item.currency === currency
     );
@@ -35,6 +46,7 @@ export default function App() {
         ...currencyData.slice(itemIndex + 1),
       ],
     });
+    event.stopPropagation();
   };
 
   return (
@@ -45,10 +57,19 @@ export default function App() {
         {dividingLine}
         <CurrencyList
           deleteCurrencyItem={deleteCurrencyItem}
+          selectCurrencyItem={selectCurrencyItem}
           currencyData={currencyData}
+          activeCurrencyItem={activeCurrencyItem}
         />
         {dividingLine}
-        <Graph />
+        {activeCurrencyItem ? (
+          <Graph
+            cleanActiveCurrencyItem={cleanActiveCurrencyItem}
+            activeCurrencyItem={activeCurrencyItem}
+          />
+        ) : (
+          ""
+        )}
       </div>
     </div>
   );
