@@ -1,52 +1,53 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Header from "../Header";
 import CurrencyList from "../CurrencyList";
 import ContentSeparator from "../ContentSeparator";
 import Graph from "../Graph";
+import getResource from "../../services/cryptocompareService";
 import "./app.css";
 
-const initialState = {
-  currencyData: [
-    { currency: "Rub", price: "1100" },
-    { currency: "Eur", price: "100" },
-    { currency: "Zlt", price: "400" },
-  ],
-  activeCurrencyItem: null,
-};
+const initialData = [
+  { currency: "Rub", price: "1100" },
+  { currency: "Eur", price: "100" },
+  { currency: "Zlt", price: "400" },
+];
 
 export default function App() {
-  const [state, setCurrencyData] = useState(initialState);
-  const { currencyData, activeCurrencyItem } = state;
+  const [data, setData] = useState(initialData);
+  const [activeItem, setActiveItem] = useState(null);
+  useEffect(() => {
+    !!activeItem &&
+      setInterval(() => {
+        getResource(activeItem).then((item) => console.log(item));
+      }, 3000);
+  }, [activeItem]);
 
-  const dividingLine = currencyData.length > 0 ? <ContentSeparator /> : "";
-
-  const addCurrencyItem = (currencyName) => {
-    setCurrencyData({
-      ...state,
-      currencyData: [...currencyData, { currency: currencyName, price: "-" }],
-    });
-  };
+  const dividingLine = !!data.length && <ContentSeparator />;
 
   const selectCurrencyItem = (currencyName) => {
-    setCurrencyData({ ...state, activeCurrencyItem: currencyName });
+    setActiveItem(currencyName);
   };
 
   const cleanActiveCurrencyItem = () => {
-    setCurrencyData({ ...state, activeCurrencyItem: null });
+    setActiveItem(null);
+  };
+
+  const addCurrencyItem = (currencyName) => {
+    setData((prevState) => [
+      ...prevState,
+      { currency: currencyName, price: "-" },
+    ]);
+    selectCurrencyItem(currencyName);
   };
 
   const deleteCurrencyItem = (currency, event) => {
-    const itemIndex = currencyData.findIndex(
-      (item) => item.currency === currency
-    );
-    setCurrencyData({
-      ...state,
-      currencyData: [
-        ...currencyData.slice(0, itemIndex),
-        ...currencyData.slice(itemIndex + 1),
-      ],
-    });
+    const itemIndex = data.findIndex((item) => item.currency === currency);
+    setData((prevState) => [
+      ...prevState.slice(0, itemIndex),
+      ...prevState.slice(itemIndex + 1),
+    ]);
     event.stopPropagation();
+    currency === activeItem && cleanActiveCurrencyItem();
   };
 
   return (
@@ -58,17 +59,15 @@ export default function App() {
         <CurrencyList
           deleteCurrencyItem={deleteCurrencyItem}
           selectCurrencyItem={selectCurrencyItem}
-          currencyData={currencyData}
-          activeCurrencyItem={activeCurrencyItem}
+          currencyData={data}
+          activeCurrencyItem={activeItem}
         />
         {dividingLine}
-        {activeCurrencyItem ? (
+        {!!activeItem && (
           <Graph
             cleanActiveCurrencyItem={cleanActiveCurrencyItem}
-            activeCurrencyItem={activeCurrencyItem}
+            activeCurrencyItem={activeItem}
           />
-        ) : (
-          ""
         )}
       </div>
     </div>

@@ -13,7 +13,7 @@ export default function CurrencyList({
       price={price}
       key={currency}
       deleteCurrencyItem={deleteCurrencyItem}
-      isActive={currency === activeCurrencyItem ? true : false}
+      isActive={currency === activeCurrencyItem}
       selectCurrencyItem={selectCurrencyItem}
     />
   ));
